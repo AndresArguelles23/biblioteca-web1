@@ -23,7 +23,7 @@ export default async function LibroPage({ params }) {
 
   return (
     <>
-      <a href="/" className="back-link">
+      <a href="/inventario" className="back-link">
         ← Volver al inventario
       </a>
       <h2 style={{ marginBottom: 4 }}>Editar libro</h2>

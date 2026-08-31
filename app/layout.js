@@ -1,4 +1,5 @@
 import { Manrope, Inter, IBM_Plex_Mono } from 'next/font/google';
+import { supabase } from '@/lib/supabase';
 import './globals.css';
 
 const display = Manrope({
@@ -24,7 +25,21 @@ export const metadata = {
   description: 'Inventario del material bibliográfico de la biblioteca escolar.',
 };
 
-export default function RootLayout({ children }) {
+async function getRevisarCount() {
+  try {
+    const { count } = await supabase
+      .from('libros')
+      .select('id', { count: 'exact', head: true })
+      .eq('revisar', true);
+    return count || 0;
+  } catch {
+    return 0;
+  }
+}
+
+export default async function RootLayout({ children }) {
+  const revisarCount = await getRevisarCount();
+
   return (
     <html lang="es" className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <body>
@@ -38,9 +53,17 @@ export default function RootLayout({ children }) {
               </div>
             </div>
           </a>
-          <a href="/libros/nuevo" className="btn btn-primary">
-            + Agregar libro
-          </a>
+          <nav className="main-nav">
+            <a href="/">Dashboard</a>
+            <a href="/inventario">Inventario</a>
+            <a href="/revisar">
+              Revisar
+              {revisarCount > 0 && <span className="nav-count">{revisarCount}</span>}
+            </a>
+            <a href="/libros/nuevo" className="btn btn-primary" style={{ marginLeft: 8 }}>
+              + Agregar libro
+            </a>
+          </nav>
         </header>
         <main>{children}</main>
       </body>
