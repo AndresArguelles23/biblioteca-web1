@@ -27,8 +27,11 @@ export default async function LibroPage({ params }) {
         ← Volver al inventario
       </a>
       <h2 style={{ marginBottom: 4 }}>Editar libro</h2>
-      <p style={{ color: '#4c5346', marginBottom: 16, fontSize: '0.85rem' }}>
+      <p style={{ color: '#4c5346', marginBottom: 4, fontSize: '0.85rem' }}>
         Clase <span className="mono">{libro.clase}</span>
+      </p>
+      <p style={{ color: 'var(--text-soft)', marginBottom: 16, maxWidth: 640 }}>
+        {libro.texto_original || libro.titulo || '(sin descripción)'}
       </p>
 
       {libro.notas_revision && (
@@ -38,7 +41,7 @@ export default async function LibroPage({ params }) {
       <BookForm action={boundUpdate} book={libro} submitLabel="Guardar cambios" />
 
       <div style={{ marginTop: 18 }}>
-        <DeleteButton action={boundDelete} titulo={libro.titulo} />
+        <DeleteButton action={boundDelete} titulo={libro.texto_original || libro.titulo} />
       </div>
     </>
   );

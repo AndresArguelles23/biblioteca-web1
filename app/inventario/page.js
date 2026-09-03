@@ -3,11 +3,11 @@ import { supabase, fetchAllRows } from '@/lib/supabase';
 export const dynamic = 'force-dynamic';
 
 const PAGE_SIZE = 30;
-const LIST_COLUMNS = 'id,clase,titulo,autor,anio,categoria,estado,revisar';
+const LIST_COLUMNS = 'id,clase,titulo,autor,anio,categoria,estado,revisar,texto_original';
 
 const SORT_OPTIONS = {
   clase: { column: 'clase', label: 'Clase' },
-  titulo: { column: 'titulo', label: 'Título' },
+  titulo: { column: 'titulo', label: 'Descripción' },
   autor: { column: 'autor', label: 'Autor' },
   anio: { column: 'anio', label: 'Año' },
 };
@@ -37,7 +37,7 @@ async function getLibros(params) {
   if (params.q) {
     const q = params.q.trim();
     query = query.or(
-      `titulo.ilike.%${q}%,autor.ilike.%${q}%,clase.ilike.%${q}%,isbn.ilike.%${q}%`
+      `titulo.ilike.%${q}%,autor.ilike.%${q}%,clase.ilike.%${q}%,isbn.ilike.%${q}%,texto_original.ilike.%${q}%`
     );
   }
   if (params.categoria) {
@@ -172,7 +172,7 @@ export default async function InventarioPage({ searchParams }) {
               <thead>
                 <tr>
                   <th style={{ width: 110 }}>Clase</th>
-                  <th>Título</th>
+                  <th>Descripción</th>
                   <th style={{ width: 180 }}>Categoría</th>
                   <th style={{ width: 70 }}>Año</th>
                   <th style={{ width: 140 }}>Estado</th>
@@ -188,8 +188,9 @@ export default async function InventarioPage({ searchParams }) {
                     </td>
                     <td>
                       <a className="row-anchor" href={`/libros/${libro.id}`}>
-                        <div className="td-titulo">{libro.titulo || '(sin título)'}</div>
-                        <div className="td-sub">{libro.autor || 'Autor desconocido'}</div>
+                        <div className="td-titulo clamp-2">
+                          {libro.texto_original || libro.titulo || '(sin descripción)'}
+                        </div>
                       </a>
                     </td>
                     <td>
@@ -210,7 +211,11 @@ export default async function InventarioPage({ searchParams }) {
                               {ESTADO_LABEL[libro.estado] || libro.estado}
                             </span>
                           )}
-                          {libro.revisar && <span className="badge badge-revisar">Revisar</span>}
+                          {libro.revisar && (
+                            <span className="alert-flag" title="Pendiente de revisar">
+                              ⚠
+                            </span>
+                          )}
                         </div>
                       </a>
                     </td>
@@ -232,13 +237,15 @@ export default async function InventarioPage({ searchParams }) {
                         {ESTADO_LABEL[libro.estado] || libro.estado}
                       </span>
                     )}
-                    {libro.revisar && <span className="badge badge-revisar">Revisar</span>}
+                    {libro.revisar && (
+                      <span className="alert-flag" title="Pendiente de revisar">
+                        ⚠
+                      </span>
+                    )}
                   </div>
                 </div>
-                <div className="card-titulo">{libro.titulo || '(sin título)'}</div>
-                <div className="card-meta">
-                  {libro.autor || 'Autor desconocido'}
-                  {libro.anio ? ` · ${libro.anio}` : ''}
+                <div className="card-titulo clamp-2">
+                  {libro.texto_original || libro.titulo || '(sin descripción)'}
                 </div>
                 <div className="card-meta">{libro.categoria}</div>
               </a>

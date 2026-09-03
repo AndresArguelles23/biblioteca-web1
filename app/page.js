@@ -1,4 +1,6 @@
 import { supabase, fetchAllRows } from '@/lib/supabase';
+import EstadoDonutChart from '@/components/EstadoDonutChart';
+import CategoriaBarChart from '@/components/CategoriaBarChart';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,9 +14,6 @@ async function getStats() {
 }
 
 async function getAggregates() {
-  // Traemos solo columnas livianas para armar los conteos por categoría,
-  // estado y el total de ejemplares (paginando para no toparnos con el
-  // límite de 1000 filas de Supabase).
   const rows = await fetchAllRows('categoria,estado,cantidad');
 
   const porCategoria = new Map();
@@ -33,7 +32,8 @@ async function getAggregates() {
 
   const categoriasOrdenadas = Array.from(porCategoria.entries())
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 8);
+    .slice(0, 8)
+    .map(([name, value]) => ({ name, value }));
 
   return {
     categorias: categoriasOrdenadas,
@@ -46,7 +46,7 @@ async function getAggregates() {
 async function getRecientes() {
   const { data } = await supabase
     .from('libros')
-    .select('id,titulo,autor,clase,categoria')
+    .select('id,clase,texto_original')
     .order('created_at', { ascending: false })
     .order('id', { ascending: false })
     .limit(6);
@@ -56,14 +56,12 @@ async function getRecientes() {
 async function getEnMalEstado() {
   const { data } = await supabase
     .from('libros')
-    .select('id,titulo,autor,clase')
+    .select('id,clase,texto_original')
     .eq('estado', 'M')
     .order('clase', { ascending: true })
     .limit(6);
   return data || [];
 }
-
-const ESTADO_LABEL = { B: 'Bueno', R: 'Regular', M: 'Malo' };
 
 export default async function DashboardPage() {
   const [stats, agg, recientes, malos] = await Promise.all([
@@ -73,8 +71,11 @@ export default async function DashboardPage() {
     getEnMalEstado(),
   ]);
 
-  const maxCategoria = Math.max(...agg.categorias.map(([, v]) => v), 1);
-  const maxEstado = Math.max(agg.porEstado.B, agg.porEstado.R, agg.porEstado.M, 1);
+  const estadoData = [
+    { name: 'Bueno', value: agg.porEstado.B },
+    { name: 'Regular', value: agg.porEstado.R },
+    { name: 'Malo', value: agg.porEstado.M },
+  ];
 
   return (
     <>
@@ -107,35 +108,14 @@ export default async function DashboardPage() {
             <h3>Libros por categoría (top 8)</h3>
             <a href="/inventario">Ver inventario →</a>
           </div>
-          {agg.categorias.map(([nombre, valor]) => (
-            <div className="bar-row" key={nombre}>
-              <div className="bar-label" title={nombre}>
-                {nombre}
-              </div>
-              <div className="bar-track">
-                <div className="bar-fill" style={{ width: `${(valor / maxCategoria) * 100}%` }} />
-              </div>
-              <div className="bar-value">{valor}</div>
-            </div>
-          ))}
+          <CategoriaBarChart data={agg.categorias} />
         </div>
 
         <div className="panel">
           <h3>Distribución por estado</h3>
-          {['B', 'R', 'M'].map((key) => (
-            <div className="bar-row" key={key}>
-              <div className="bar-label">{ESTADO_LABEL[key]}</div>
-              <div className="bar-track">
-                <div
-                  className={`bar-fill fill-${key}`}
-                  style={{ width: `${(agg.porEstado[key] / maxEstado) * 100}%` }}
-                />
-              </div>
-              <div className="bar-value">{agg.porEstado[key]}</div>
-            </div>
-          ))}
+          <EstadoDonutChart data={estadoData} />
 
-          <div style={{ marginTop: 22 }}>
+          <div style={{ marginTop: 10 }}>
             <div className="panel-head">
               <h3>Agregados recientemente</h3>
             </div>
@@ -146,8 +126,9 @@ export default async function DashboardPage() {
               {recientes.map((libro) => (
                 <a key={libro.id} className="mini-item" href={`/libros/${libro.id}`}>
                   <div style={{ minWidth: 0 }}>
-                    <div className="mini-titulo">{libro.titulo || '(sin título)'}</div>
-                    <div className="mini-sub">{libro.autor || 'Autor desconocido'}</div>
+                    <div className="mini-titulo clamp-2">
+                      {libro.texto_original || '(sin descripción)'}
+                    </div>
                   </div>
                   <span className="clase-badge mono">{libro.clase}</span>
                 </a>
@@ -169,8 +150,9 @@ export default async function DashboardPage() {
             {malos.map((libro) => (
               <a key={libro.id} className="mini-item" href={`/libros/${libro.id}`}>
                 <div style={{ minWidth: 0 }}>
-                  <div className="mini-titulo">{libro.titulo || '(sin título)'}</div>
-                  <div className="mini-sub">{libro.autor || 'Autor desconocido'}</div>
+                  <div className="mini-titulo clamp-2">
+                    {libro.texto_original || '(sin descripción)'}
+                  </div>
                 </div>
                 <span className="clase-badge mono">{libro.clase}</span>
               </a>

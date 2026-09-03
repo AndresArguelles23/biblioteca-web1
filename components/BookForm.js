@@ -74,8 +74,10 @@ export default function BookForm({ action, book, submitLabel }) {
           </div>
         </div>
         <div className="full">
-          <label htmlFor="notas_revision">Notas de revisión (opcional)</label>
-          <input id="notas_revision" name="notas_revision" defaultValue={b.notas_revision || ''} />
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.9rem' }}>
+            <input type="checkbox" name="revisar" defaultChecked={!!b.revisar} />
+            ⚠ Marcar para revisar (alerta visible en el inventario)
+          </label>
         </div>
         <div className="full">
           <label htmlFor="texto_original">Texto original / descripción completa</label>

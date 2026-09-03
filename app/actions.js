@@ -17,6 +17,7 @@ function toTextOrNull(value) {
 }
 
 function extractPayload(formData) {
+  const revisar = formData.get('revisar') === 'on';
   return {
     categoria: toTextOrNull(formData.get('categoria')),
     subcategoria: toTextOrNull(formData.get('subcategoria')),
@@ -33,7 +34,8 @@ function extractPayload(formData) {
     cantidad: toIntOrNull(formData.get('cantidad')) ?? 1,
     estado: toTextOrNull(formData.get('estado')),
     ubicacion: toTextOrNull(formData.get('ubicacion')),
-    notas_revision: toTextOrNull(formData.get('notas_revision')),
+    revisar,
+    notas_revision: revisar ? toTextOrNull(formData.get('notas_revision')) : null,
     texto_original: toTextOrNull(formData.get('texto_original')),
   };
 }
