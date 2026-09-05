@@ -35,12 +35,7 @@ async function getAggregates() {
     .slice(0, 8)
     .map(([name, value]) => ({ name, value }));
 
-  return {
-    categorias: categoriasOrdenadas,
-    totalCategorias: porCategoria.size,
-    porEstado,
-    ejemplares,
-  };
+  return { categorias: categoriasOrdenadas, porEstado, ejemplares };
 }
 
 async function getRecientes() {
@@ -49,7 +44,7 @@ async function getRecientes() {
     .select('id,clase,texto_original')
     .order('created_at', { ascending: false })
     .order('id', { ascending: false })
-    .limit(6);
+    .limit(5);
   return data || [];
 }
 
@@ -59,7 +54,7 @@ async function getEnMalEstado() {
     .select('id,clase,texto_original')
     .eq('estado', 'M')
     .order('clase', { ascending: true })
-    .limit(6);
+    .limit(5);
   return data || [];
 }
 
@@ -76,33 +71,37 @@ export default async function DashboardPage() {
     { name: 'Regular', value: agg.porEstado.R },
     { name: 'Malo', value: agg.porEstado.M },
   ];
+  const pctRevisado = stats.total > 0
+    ? Math.round(((stats.total - stats.revisar) / stats.total) * 100)
+    : 100;
 
   return (
     <>
       <div className="stats-row">
         <div className="stat-card">
           <div className="stat-value">{stats.total.toLocaleString('es-CO')}</div>
-          <div className="stat-label">Títulos distintos</div>
+          <div className="stat-label">Libros en el inventario</div>
         </div>
         <div className="stat-card">
           <div className="stat-value">{agg.ejemplares.toLocaleString('es-CO')}</div>
           <div className="stat-label">Ejemplares totales</div>
         </div>
         <div className="stat-card">
-          <div className="stat-value">{agg.totalCategorias}</div>
-          <div className="stat-label">Categorías</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value">{stats.revisar.toLocaleString('es-CO')}</div>
-          <div className="stat-label">Pendientes de revisar</div>
-        </div>
-        <div className="stat-card">
           <div className="stat-value">{stats.malos.toLocaleString('es-CO')}</div>
           <div className="stat-label">En mal estado</div>
         </div>
+        <div className="stat-card">
+          <div className="stat-value">{pctRevisado}%</div>
+          <div className="stat-label">Inventario revisado ({stats.revisar.toLocaleString('es-CO')} pendientes)</div>
+        </div>
       </div>
 
-      <div className="dash-grid">
+      <div className="dash-stack">
+        <div className="panel">
+          <h3>Distribución por estado</h3>
+          <EstadoDonutChart data={estadoData} />
+        </div>
+
         <div className="panel">
           <div className="panel-head">
             <h3>Libros por categoría (top 8)</h3>
@@ -112,53 +111,38 @@ export default async function DashboardPage() {
         </div>
 
         <div className="panel">
-          <h3>Distribución por estado</h3>
-          <EstadoDonutChart data={estadoData} />
-
-          <div style={{ marginTop: 10 }}>
-            <div className="panel-head">
-              <h3>Agregados recientemente</h3>
-            </div>
-            <div className="mini-list">
-              {recientes.length === 0 && (
-                <span className="mini-sub">Aún no hay registros recientes.</span>
-              )}
-              {recientes.map((libro) => (
-                <a key={libro.id} className="mini-item" href={`/libros/${libro.id}`}>
-                  <div style={{ minWidth: 0 }}>
-                    <div className="mini-titulo clamp-2">
-                      {libro.texto_original || '(sin descripción)'}
-                    </div>
-                  </div>
-                  <span className="clase-badge mono">{libro.clase}</span>
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="panel" style={{ marginTop: 16 }}>
-        <div className="panel-head">
-          <h3>En mal estado — revisar reparación o baja</h3>
-          <a href="/inventario?estado=M">Ver todos →</a>
-        </div>
-        {malos.length === 0 ? (
-          <span className="mini-sub">No hay libros marcados como "Malo" en este momento. 🎉</span>
-        ) : (
+          <h3>Agregados recientemente</h3>
           <div className="mini-list">
-            {malos.map((libro) => (
+            {recientes.length === 0 && (
+              <span className="mini-sub">Aún no hay registros recientes.</span>
+            )}
+            {recientes.map((libro) => (
               <a key={libro.id} className="mini-item" href={`/libros/${libro.id}`}>
-                <div style={{ minWidth: 0 }}>
-                  <div className="mini-titulo clamp-2">
-                    {libro.texto_original || '(sin descripción)'}
-                  </div>
-                </div>
+                <span className="mini-titulo-1l">{libro.texto_original || '(sin descripción)'}</span>
                 <span className="clase-badge mono">{libro.clase}</span>
               </a>
             ))}
           </div>
-        )}
+        </div>
+
+        <div className="panel">
+          <div className="panel-head">
+            <h3>En mal estado — revisar reparación o baja</h3>
+            <a href="/inventario?estado=M">Ver todos →</a>
+          </div>
+          {malos.length === 0 ? (
+            <span className="mini-sub">No hay libros marcados como "Malo" en este momento. 🎉</span>
+          ) : (
+            <div className="mini-list">
+              {malos.map((libro) => (
+                <a key={libro.id} className="mini-item" href={`/libros/${libro.id}`}>
+                  <span className="mini-titulo-1l">{libro.texto_original || '(sin descripción)'}</span>
+                  <span className="clase-badge mono">{libro.clase}</span>
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="dash-actions">

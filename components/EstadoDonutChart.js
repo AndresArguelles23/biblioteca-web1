@@ -17,7 +17,7 @@ export default function EstadoDonutChart({ data }) {
   }
 
   return (
-    <div style={{ width: '100%', height: 220 }}>
+    <div style={{ width: '100%', minWidth: 0, height: 220 }}>
       <ResponsiveContainer>
         <PieChart>
           <Pie

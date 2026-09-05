@@ -16,7 +16,7 @@ export default function CategoriaBarChart({ data }) {
   const height = Math.max(data.length * rowHeight, 120);
 
   return (
-    <div style={{ width: '100%', height }}>
+    <div style={{ width: '100%', minWidth: 0, height }}>
       <ResponsiveContainer>
         <BarChart
           data={data}
