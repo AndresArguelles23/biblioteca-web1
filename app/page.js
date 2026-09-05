@@ -1,8 +1,13 @@
 import { supabase, fetchAllRows } from '@/lib/supabase';
 import EstadoDonutChart from '@/components/EstadoDonutChart';
 import CategoriaBarChart from '@/components/CategoriaBarChart';
+import RevisionRadialChart from '@/components/RevisionRadialChart';
+import DecadaBarChart from '@/components/DecadaBarChart';
 
 export const dynamic = 'force-dynamic';
+
+const ANIO_MIN = 1900;
+const ANIO_MAX = new Date().getFullYear() + 1;
 
 async function getStats() {
   const [{ count: total }, { count: revisar }, { count: malos }] = await Promise.all([
@@ -14,10 +19,11 @@ async function getStats() {
 }
 
 async function getAggregates() {
-  const rows = await fetchAllRows('categoria,estado,cantidad');
+  const rows = await fetchAllRows('categoria,estado,cantidad,anio');
 
   const porCategoria = new Map();
   const porEstado = { B: 0, R: 0, M: 0 };
+  const porDecada = new Map();
   let ejemplares = 0;
 
   rows.forEach((r) => {
@@ -28,6 +34,12 @@ async function getAggregates() {
       porEstado[r.estado] += 1;
     }
     ejemplares += Number(r.cantidad) || 0;
+
+    const anio = Number(r.anio);
+    if (anio && anio >= ANIO_MIN && anio <= ANIO_MAX) {
+      const decada = Math.floor(anio / 10) * 10;
+      porDecada.set(decada, (porDecada.get(decada) || 0) + 1);
+    }
   });
 
   const categoriasOrdenadas = Array.from(porCategoria.entries())
@@ -35,36 +47,15 @@ async function getAggregates() {
     .slice(0, 8)
     .map(([name, value]) => ({ name, value }));
 
-  return { categorias: categoriasOrdenadas, porEstado, ejemplares };
-}
+  const decadasOrdenadas = Array.from(porDecada.entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([decada, value]) => ({ name: `${decada}`, value }));
 
-async function getRecientes() {
-  const { data } = await supabase
-    .from('libros')
-    .select('id,clase,texto_original')
-    .order('created_at', { ascending: false })
-    .order('id', { ascending: false })
-    .limit(5);
-  return data || [];
-}
-
-async function getEnMalEstado() {
-  const { data } = await supabase
-    .from('libros')
-    .select('id,clase,texto_original')
-    .eq('estado', 'M')
-    .order('clase', { ascending: true })
-    .limit(5);
-  return data || [];
+  return { categorias: categoriasOrdenadas, porEstado, ejemplares, decadas: decadasOrdenadas };
 }
 
 export default async function DashboardPage() {
-  const [stats, agg, recientes, malos] = await Promise.all([
-    getStats(),
-    getAggregates(),
-    getRecientes(),
-    getEnMalEstado(),
-  ]);
+  const [stats, agg] = await Promise.all([getStats(), getAggregates()]);
 
   const estadoData = [
     { name: 'Bueno', value: agg.porEstado.B },
@@ -92,7 +83,7 @@ export default async function DashboardPage() {
         </div>
         <div className="stat-card">
           <div className="stat-value">{pctRevisado}%</div>
-          <div className="stat-label">Inventario revisado ({stats.revisar.toLocaleString('es-CO')} pendientes)</div>
+          <div className="stat-label">Inventario revisado</div>
         </div>
       </div>
 
@@ -100,6 +91,11 @@ export default async function DashboardPage() {
         <div className="panel">
           <h3>Distribución por estado</h3>
           <EstadoDonutChart data={estadoData} />
+        </div>
+
+        <div className="panel">
+          <h3>Progreso de revisión del inventario</h3>
+          <RevisionRadialChart porcentaje={pctRevisado} pendientes={stats.revisar} />
         </div>
 
         <div className="panel">
@@ -111,37 +107,8 @@ export default async function DashboardPage() {
         </div>
 
         <div className="panel">
-          <h3>Agregados recientemente</h3>
-          <div className="mini-list">
-            {recientes.length === 0 && (
-              <span className="mini-sub">Aún no hay registros recientes.</span>
-            )}
-            {recientes.map((libro) => (
-              <a key={libro.id} className="mini-item" href={`/libros/${libro.id}`}>
-                <span className="mini-titulo-1l">{libro.texto_original || '(sin descripción)'}</span>
-                <span className="clase-badge mono">{libro.clase}</span>
-              </a>
-            ))}
-          </div>
-        </div>
-
-        <div className="panel">
-          <div className="panel-head">
-            <h3>En mal estado — revisar reparación o baja</h3>
-            <a href="/inventario?estado=M">Ver todos →</a>
-          </div>
-          {malos.length === 0 ? (
-            <span className="mini-sub">No hay libros marcados como "Malo" en este momento. 🎉</span>
-          ) : (
-            <div className="mini-list">
-              {malos.map((libro) => (
-                <a key={libro.id} className="mini-item" href={`/libros/${libro.id}`}>
-                  <span className="mini-titulo-1l">{libro.texto_original || '(sin descripción)'}</span>
-                  <span className="clase-badge mono">{libro.clase}</span>
-                </a>
-              ))}
-            </div>
-          )}
+          <h3>Libros por década de publicación</h3>
+          <DecadaBarChart data={agg.decadas} />
         </div>
       </div>
 
@@ -151,6 +118,9 @@ export default async function DashboardPage() {
         </a>
         <a href="/inventario" className="btn btn-outline">
           Ver inventario completo
+        </a>
+        <a href="/inventario?estado=M" className="btn btn-outline">
+          Ver libros en mal estado ({stats.malos})
         </a>
         <a href="/libros/nuevo" className="btn btn-outline">
           + Agregar libro
