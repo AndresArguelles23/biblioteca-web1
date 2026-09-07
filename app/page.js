@@ -113,10 +113,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="dash-actions">
-        <a href="/revisar" className="btn btn-primary">
-          Ir a la cola de revisión ({stats.revisar})
-        </a>
-        <a href="/inventario" className="btn btn-outline">
+        <a href="/inventario" className="btn btn-primary">
           Ver inventario completo
         </a>
         <a href="/inventario?estado=M" className="btn btn-outline">

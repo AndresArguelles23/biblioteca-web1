@@ -1,5 +1,6 @@
 import { Manrope, Inter, IBM_Plex_Mono } from 'next/font/google';
-import { supabase } from '@/lib/supabase';
+import { isAuthenticated } from '@/lib/auth';
+import { logout } from '@/app/login/actions';
 import './globals.css';
 
 const display = Manrope({
@@ -23,22 +24,15 @@ const mono = IBM_Plex_Mono({
 export const metadata = {
   title: 'Biblioteca Escolar — Normal Superior Santa Clara Almaguer',
   description: 'Inventario del material bibliográfico de la biblioteca escolar.',
+  openGraph: {
+    title: 'Biblioteca Escolar — Normal Superior Santa Clara Almaguer',
+    description: 'Consulta el inventario de material bibliográfico de la biblioteca escolar.',
+    type: 'website',
+  },
 };
 
-async function getRevisarCount() {
-  try {
-    const { count } = await supabase
-      .from('libros')
-      .select('id', { count: 'exact', head: true })
-      .eq('revisar', true);
-    return count || 0;
-  } catch {
-    return 0;
-  }
-}
-
 export default async function RootLayout({ children }) {
-  const revisarCount = await getRevisarCount();
+  const authed = isAuthenticated();
 
   return (
     <html lang="es" className={`${display.variable} ${body.variable} ${mono.variable}`}>
@@ -56,16 +50,28 @@ export default async function RootLayout({ children }) {
           <nav className="main-nav">
             <a href="/">Dashboard</a>
             <a href="/inventario">Inventario</a>
-            <a href="/revisar">
-              Revisar
-              {revisarCount > 0 && <span className="nav-count">{revisarCount}</span>}
-            </a>
             <a href="/libros/nuevo" className="btn btn-primary" style={{ marginLeft: 8 }}>
               + Agregar libro
             </a>
+            {authed ? (
+              <form action={logout} style={{ marginLeft: 4 }}>
+                <button type="submit" className="btn btn-outline">
+                  Cerrar sesión
+                </button>
+              </form>
+            ) : (
+              <a href="/login" className="btn btn-outline" style={{ marginLeft: 4 }}>
+                Iniciar sesión
+              </a>
+            )}
           </nav>
         </header>
         <main>{children}</main>
+        <footer className="site-footer">
+          <span>Biblioteca Escolar — Institución Educativa Normal Superior Santa Clara Almaguer</span>
+          <span className="footer-sep">·</span>
+          <span>Sistema de inventario bibliográfico</span>
+        </footer>
       </body>
     </html>
   );

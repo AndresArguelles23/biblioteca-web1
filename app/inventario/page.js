@@ -1,4 +1,5 @@
 import { supabase, fetchAllRows } from '@/lib/supabase';
+import PrintButton from '@/components/PrintButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -152,7 +153,15 @@ export default async function InventarioPage({ searchParams }) {
         <span>
           {count} {count === 1 ? 'libro encontrado' : 'libros encontrados'}
         </span>
-        {hasFilters && <a href="/inventario">Limpiar filtros</a>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          {hasFilters && <a href="/inventario">Limpiar filtros</a>}
+          <PrintButton />
+        </div>
+      </div>
+
+      <div className="print-only print-header">
+        <h2>Inventario — Biblioteca Escolar</h2>
+        <p>Normal Superior Santa Clara Almaguer · Impreso el {new Date().toLocaleDateString('es-CO')}</p>
       </div>
 
       {error && <p className="notas">Error consultando la base de datos: {error.message}</p>}

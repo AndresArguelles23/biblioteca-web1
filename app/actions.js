@@ -62,26 +62,6 @@ export async function updateBook(id, formData) {
   redirect('/inventario');
 }
 
-export async function reviewSave(id, formData) {
-  const payload = extractPayload(formData);
-  // En la cola de revisión, el checkbox "Marcar como revisado" decide si
-  // el libro sale de la lista de pendientes o si se queda (por si faltó
-  // información y se quiere completar después).
-  payload.revisar = formData.get('marcar_revisado') !== 'on' ? true : false;
-  if (payload.revisar) {
-    payload.notas_revision = toTextOrNull(formData.get('notas_revision'));
-  } else {
-    payload.notas_revision = null;
-  }
-  const { error } = await supabase.from('libros').update(payload).eq('id', id);
-  if (error) {
-    throw new Error('No se pudo guardar el libro: ' + error.message);
-  }
-  revalidatePath('/');
-  revalidatePath('/revisar');
-  redirect('/revisar');
-}
-
 export async function deleteBook(id) {
   const { error } = await supabase.from('libros').delete().eq('id', id);
   if (error) {

@@ -51,6 +51,7 @@ Si nunca has usado GitHub, la forma más fácil es con **GitHub Desktop** (https
 4. Antes de darle a "Deploy", despliega la sección **Environment Variables** y agrega:
    - `NEXT_PUBLIC_SUPABASE_URL` → pega el Project URL del Paso 3
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` → pega el anon public key del Paso 3
+   - `ADMIN_PASSWORD` → inventa una contraseña (la que usará el bibliotecario para poder agregar/editar/eliminar libros). Cualquiera puede consultar el Dashboard y el Inventario sin esta contraseña — solo se pide al intentar agregar, editar o eliminar un libro.
 5. Haz click en **Deploy**. En 1-2 minutos tendrás tu aplicación en una dirección tipo `https://biblioteca-web-tuusuario.vercel.app`.
 
 ¡Listo! Esa dirección ya la puedes compartir con quien necesite consultar el inventario.

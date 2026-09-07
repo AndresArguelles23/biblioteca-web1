@@ -884,3 +884,93 @@ main {
     display: block;
   }
 }
+
+/* --- Footer --- */
+.site-footer {
+  max-width: 1180px;
+  margin: 40px auto 0;
+  padding: 18px 20px 30px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  font-size: 0.78rem;
+  color: var(--text-faint);
+}
+
+.footer-sep {
+  opacity: 0.6;
+}
+
+/* --- Skeletons (estados de carga) --- */
+@keyframes skeleton-pulse {
+  0% { opacity: 0.55; }
+  50% { opacity: 1; }
+  100% { opacity: 0.55; }
+}
+
+.skeleton-line,
+.skeleton-block {
+  background: var(--border);
+  border-radius: 6px;
+  animation: skeleton-pulse 1.3s ease-in-out infinite;
+}
+
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Vista de impresión --- */
+.print-only {
+  display: none;
+}
+
+@media print {
+  .site-header,
+  .site-footer,
+  .filters,
+  .summary-bar,
+  .pagination,
+  .dash-actions {
+    display: none !important;
+  }
+
+  .print-only.print-header {
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  main {
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .book-table-wrap {
+    display: block !important;
+    box-shadow: none;
+    border: none;
+  }
+
+  .mobile-book-list {
+    display: none !important;
+  }
+
+  .book-table {
+    width: 100%;
+  }
+
+  .book-table thead th {
+    background: none;
+  }
+
+  a {
+    text-decoration: none;
+    color: var(--text);
+  }
+
+  body {
+    background: #fff;
+  }
+}
