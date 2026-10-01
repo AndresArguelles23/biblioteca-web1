@@ -1,12 +1,12 @@
 export default function NotFound() {
   return (
-    <div className="all-done" style={{ marginTop: 40 }}>
-      <div className="big-check">📚</div>
+    <div className="all-done not-found">
+      <div className="big-check" aria-hidden="true">📚</div>
       <h2>No encontramos esta página</h2>
-      <p style={{ color: 'var(--text-soft)', marginTop: 8, maxWidth: 420, marginInline: 'auto' }}>
+      <p className="not-found-text">
         Puede que el libro haya sido eliminado, o que el enlace esté incompleto.
       </p>
-      <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 20 }}>
+      <div className="not-found-actions">
         <a href="/" className="btn btn-primary">
           Volver al Dashboard
         </a>

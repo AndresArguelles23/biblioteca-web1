@@ -44,7 +44,7 @@ export async function addBook(formData) {
   const payload = extractPayload(formData);
   const { error } = await supabase.from('libros').insert(payload);
   if (error) {
-    throw new Error('No se pudo guardar el libro: ' + error.message);
+    redirect(`/libros/nuevo?error=${encodeURIComponent('No se pudo guardar el libro: ' + error.message)}`);
   }
   revalidatePath('/');
   revalidatePath('/inventario');
@@ -55,7 +55,7 @@ export async function updateBook(id, formData) {
   const payload = extractPayload(formData);
   const { error } = await supabase.from('libros').update(payload).eq('id', id);
   if (error) {
-    throw new Error('No se pudo actualizar el libro: ' + error.message);
+    redirect(`/libros/${id}?error=${encodeURIComponent('No se pudo actualizar el libro: ' + error.message)}`);
   }
   revalidatePath('/');
   revalidatePath('/inventario');
@@ -65,9 +65,29 @@ export async function updateBook(id, formData) {
 export async function deleteBook(id) {
   const { error } = await supabase.from('libros').delete().eq('id', id);
   if (error) {
-    throw new Error('No se pudo eliminar el libro: ' + error.message);
+    redirect(`/libros/${id}?error=${encodeURIComponent('No se pudo eliminar el libro: ' + error.message)}`);
   }
   revalidatePath('/');
   revalidatePath('/inventario');
   redirect('/inventario');
+}
+
+export async function reviewSave(id, formData) {
+  const payload = extractPayload(formData);
+  const marcarRevisado = formData.get('marcar_revisado') === 'on';
+
+  // La cola de revisión usa su propio checkbox ("marcar_revisado") en vez del
+  // checkbox "revisar" del formulario completo, así que decidimos el estado
+  // de revisión explícitamente aquí.
+  payload.revisar = !marcarRevisado;
+  payload.notas_revision = marcarRevisado ? null : toTextOrNull(formData.get('notas_revision'));
+
+  const { error } = await supabase.from('libros').update(payload).eq('id', id);
+  if (error) {
+    redirect(`/revisar?after=${id}&error=${encodeURIComponent('No se pudo guardar: ' + error.message)}`);
+  }
+  revalidatePath('/');
+  revalidatePath('/inventario');
+  revalidatePath('/revisar');
+  redirect(`/revisar?after=${id}`);
 }

@@ -1,6 +1,8 @@
 import { Manrope, Inter, IBM_Plex_Mono } from 'next/font/google';
 import { isAuthenticated } from '@/lib/auth';
 import { logout } from '@/app/login/actions';
+import { supabase } from '@/lib/supabase';
+import NavLinks from '@/components/NavLinks';
 import './globals.css';
 
 const display = Manrope({
@@ -31,8 +33,23 @@ export const metadata = {
   },
 };
 
+async function getPendientesCount() {
+  try {
+    const { count } = await supabase
+      .from('libros')
+      .select('id', { count: 'exact', head: true })
+      .eq('revisar', true);
+    return count || 0;
+  } catch {
+    return 0;
+  }
+}
+
 export default async function RootLayout({ children }) {
-  const authed = isAuthenticated();
+  const [authed, pendientes] = await Promise.all([
+    isAuthenticated(),
+    getPendientesCount(),
+  ]);
 
   return (
     <html lang="es" className={`${display.variable} ${body.variable} ${mono.variable}`}>
@@ -47,20 +64,19 @@ export default async function RootLayout({ children }) {
               </div>
             </div>
           </a>
-          <nav className="main-nav">
-            <a href="/">Dashboard</a>
-            <a href="/inventario">Inventario</a>
-            <a href="/libros/nuevo" className="btn btn-primary" style={{ marginLeft: 8 }}>
+          <nav className="main-nav" aria-label="Navegación principal">
+            <NavLinks pendientes={pendientes} />
+            <a href="/libros/nuevo" className="btn btn-primary nav-cta">
               + Agregar libro
             </a>
             {authed ? (
-              <form action={logout} style={{ marginLeft: 4 }}>
+              <form action={logout} className="nav-session">
                 <button type="submit" className="btn btn-outline">
                   Cerrar sesión
                 </button>
               </form>
             ) : (
-              <a href="/login" className="btn btn-outline" style={{ marginLeft: 4 }}>
+              <a href="/login" className="btn btn-outline nav-session">
                 Iniciar sesión
               </a>
             )}

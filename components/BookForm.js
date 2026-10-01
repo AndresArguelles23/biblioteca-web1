@@ -1,7 +1,12 @@
-export default function BookForm({ action, book, submitLabel }) {
+export default function BookForm({ action, book, submitLabel, error }) {
   const b = book || {};
   return (
     <form action={action} className="form-card">
+      {error && (
+        <div className="notas notas-error" role="alert">
+          {error}
+        </div>
+      )}
       <div className="form-grid">
         <div>
           <label htmlFor="clase">Clase (código)</label>
@@ -59,8 +64,8 @@ export default function BookForm({ action, book, submitLabel }) {
           <label htmlFor="ubicacion">Ubicación</label>
           <input id="ubicacion" name="ubicacion" defaultValue={b.ubicacion || 'Biblioteca'} />
         </div>
-        <div className="full">
-          <label>Estado del ejemplar</label>
+        <fieldset className="full radio-fieldset">
+          <legend>Estado del ejemplar</legend>
           <div className="radio-group">
             <label>
               <input type="radio" name="estado" value="B" defaultChecked={b.estado === 'B' || !b.estado} /> Bueno
@@ -72,11 +77,11 @@ export default function BookForm({ action, book, submitLabel }) {
               <input type="radio" name="estado" value="M" defaultChecked={b.estado === 'M'} /> Malo
             </label>
           </div>
-        </div>
+        </fieldset>
         <div className="full">
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.9rem' }}>
+          <label className="checkbox-field">
             <input type="checkbox" name="revisar" defaultChecked={!!b.revisar} />
-            ⚠ Marcar para revisar (alerta visible en el inventario)
+            <span aria-hidden="true">⚠</span> Marcar para revisar (alerta visible en el inventario)
           </label>
         </div>
         <div className="full">

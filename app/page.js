@@ -81,10 +81,14 @@ export default async function DashboardPage() {
           <div className="stat-value">{stats.malos.toLocaleString('es-CO')}</div>
           <div className="stat-label">En mal estado</div>
         </div>
-        <div className="stat-card">
+        <a
+          href="/revisar"
+          className="stat-card stat-card-link"
+          aria-label={`Inventario revisado ${pctRevisado}%. ${stats.revisar} pendientes de revisar.`}
+        >
           <div className="stat-value">{pctRevisado}%</div>
           <div className="stat-label">Inventario revisado</div>
-        </div>
+        </a>
       </div>
 
       <div className="dash-stack">
@@ -119,6 +123,11 @@ export default async function DashboardPage() {
         <a href="/inventario?estado=M" className="btn btn-outline">
           Ver libros en mal estado ({stats.malos})
         </a>
+        {stats.revisar > 0 && (
+          <a href="/revisar" className="btn btn-outline">
+            Revisar pendientes ({stats.revisar})
+          </a>
+        )}
         <a href="/libros/nuevo" className="btn btn-outline">
           + Agregar libro
         </a>

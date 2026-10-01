@@ -221,7 +221,7 @@ export default async function InventarioPage({ searchParams }) {
                             </span>
                           )}
                           {libro.revisar && (
-                            <span className="alert-flag" title="Pendiente de revisar">
+                            <span className="alert-flag" role="img" aria-label="Pendiente de revisar" title="Pendiente de revisar">
                               ⚠
                             </span>
                           )}
@@ -247,7 +247,7 @@ export default async function InventarioPage({ searchParams }) {
                       </span>
                     )}
                     {libro.revisar && (
-                      <span className="alert-flag" title="Pendiente de revisar">
+                      <span className="alert-flag" role="img" aria-label="Pendiente de revisar" title="Pendiente de revisar">
                         ⚠
                       </span>
                     )}
@@ -264,18 +264,19 @@ export default async function InventarioPage({ searchParams }) {
       )}
 
       <div className="pagination">
-        <a href={qs(params, { page: page - 1 })} className={page <= 1 ? 'disabled' : ''}>
-          ← Anterior
-        </a>
+        {page <= 1 ? (
+          <span className="disabled" aria-disabled="true">← Anterior</span>
+        ) : (
+          <a href={qs(params, { page: page - 1 })}>← Anterior</a>
+        )}
         <span>
           Página {page} de {totalPages}
         </span>
-        <a
-          href={qs(params, { page: page + 1 })}
-          className={page >= totalPages ? 'disabled' : ''}
-        >
-          Siguiente →
-        </a>
+        {page >= totalPages ? (
+          <span className="disabled" aria-disabled="true">Siguiente →</span>
+        ) : (
+          <a href={qs(params, { page: page + 1 })}>Siguiente →</a>
+        )}
       </div>
     </>
   );

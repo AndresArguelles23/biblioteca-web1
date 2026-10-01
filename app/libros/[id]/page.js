@@ -6,15 +6,16 @@ import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-export default async function LibroPage({ params }) {
+export default async function LibroPage({ params, searchParams }) {
   const { id } = params;
-  const { data: libro, error } = await supabase
+  const saveError = searchParams?.error;
+  const { data: libro, error: fetchError } = await supabase
     .from('libros')
     .select('*')
     .eq('id', id)
     .single();
 
-  if (error || !libro) {
+  if (fetchError || !libro) {
     notFound();
   }
 
@@ -26,11 +27,11 @@ export default async function LibroPage({ params }) {
       <a href="/inventario" className="back-link">
         ← Volver al inventario
       </a>
-      <h2 style={{ marginBottom: 4 }}>Editar libro</h2>
-      <p style={{ color: '#4c5346', marginBottom: 4, fontSize: '0.85rem' }}>
+      <h2 className="detail-title">Editar libro</h2>
+      <p className="detail-meta">
         Clase <span className="mono">{libro.clase}</span>
       </p>
-      <p style={{ color: 'var(--text-soft)', marginBottom: 16, maxWidth: 640 }}>
+      <p className="detail-desc">
         {libro.texto_original || libro.titulo || '(sin descripción)'}
       </p>
 
@@ -38,9 +39,9 @@ export default async function LibroPage({ params }) {
         <div className="notas">Pendiente de revisar: {libro.notas_revision}</div>
       )}
 
-      <BookForm action={boundUpdate} book={libro} submitLabel="Guardar cambios" />
+      <BookForm action={boundUpdate} book={libro} submitLabel="Guardar cambios" error={saveError} />
 
-      <div style={{ marginTop: 18 }}>
+      <div className="delete-zone">
         <DeleteButton action={boundDelete} titulo={libro.texto_original || libro.titulo} />
       </div>
     </>

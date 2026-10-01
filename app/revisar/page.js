@@ -47,6 +47,7 @@ async function getProgreso() {
 
 export default async function RevisarPage({ searchParams }) {
   const afterId = searchParams?.after ? parseInt(searchParams.after, 10) : null;
+  const error = searchParams?.error;
   const [libro, progreso] = await Promise.all([
     getSiguientePendiente(afterId),
     getProgreso(),
@@ -55,12 +56,10 @@ export default async function RevisarPage({ searchParams }) {
   if (!libro) {
     return (
       <div className="all-done">
-        <div className="big-check">✅</div>
+        <div className="big-check" aria-hidden="true">✅</div>
         <h2>¡Todo revisado!</h2>
-        <p style={{ color: 'var(--text-soft)', marginTop: 8 }}>
-          No quedan libros pendientes de revisar.
-        </p>
-        <a href="/" className="btn btn-primary" style={{ marginTop: 16 }}>
+        <p className="all-done-text">No quedan libros pendientes de revisar.</p>
+        <a href="/" className="btn btn-primary all-done-cta">
           Volver al Dashboard
         </a>
       </div>
@@ -74,13 +73,13 @@ export default async function RevisarPage({ searchParams }) {
       <a href="/" className="back-link">
         ← Volver al Dashboard
       </a>
-      <h2 style={{ marginBottom: 4 }}>Cola de revisión</h2>
-      <p style={{ color: 'var(--text-soft)', fontSize: '0.86rem', marginBottom: 14 }}>
+      <h2 className="detail-title">Cola de revisión</h2>
+      <p className="detail-meta">
         Clase <span className="mono">{libro.clase}</span>
       </p>
 
       <div className="review-progress">
-        <span style={{ fontSize: '0.82rem', color: 'var(--text-soft)', whiteSpace: 'nowrap' }}>
+        <span className="review-progress-label">
           {progreso.pendientes} pendientes · {progreso.porcentaje}% revisado
         </span>
         <div className="review-progress-track">
@@ -96,6 +95,12 @@ export default async function RevisarPage({ searchParams }) {
 
       {libro.notas_revision && (
         <div className="notas">Pendiente: {libro.notas_revision}</div>
+      )}
+
+      {error && (
+        <div className="notas notas-error" role="alert">
+          {error}
+        </div>
       )}
 
       <form action={boundSave} className="form-card">
@@ -159,8 +164,8 @@ export default async function RevisarPage({ searchParams }) {
             <label htmlFor="ubicacion">Ubicación</label>
             <input id="ubicacion" name="ubicacion" defaultValue={libro.ubicacion || 'Biblioteca'} />
           </div>
-          <div className="full">
-            <label>Estado del ejemplar</label>
+          <fieldset className="full radio-fieldset">
+            <legend>Estado del ejemplar</legend>
             <div className="radio-group">
               <label>
                 <input type="radio" name="estado" value="B" defaultChecked={libro.estado === 'B' || !libro.estado} /> Bueno
@@ -172,8 +177,10 @@ export default async function RevisarPage({ searchParams }) {
                 <input type="radio" name="estado" value="M" defaultChecked={libro.estado === 'M'} /> Malo
               </label>
             </div>
-          </div>
+          </fieldset>
           <input type="hidden" name="texto_original" value={libro.texto_original || ''} />
+          <input type="hidden" name="subcategoria" value={libro.subcategoria || ''} />
+          <input type="hidden" name="ilustrador" value={libro.ilustrador || ''} />
           <div className="full">
             <label htmlFor="notas_revision">
               Notas (si dejas esto lleno y no marcas "Revisado", seguirá en la cola)
@@ -181,7 +188,7 @@ export default async function RevisarPage({ searchParams }) {
             <input id="notas_revision" name="notas_revision" defaultValue={libro.notas_revision || ''} />
           </div>
           <div className="full">
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.9rem' }}>
+            <label className="checkbox-field">
               <input type="checkbox" name="marcar_revisado" defaultChecked />
               Marcar como revisado (sale de la cola de pendientes)
             </label>

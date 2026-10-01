@@ -5,22 +5,22 @@ export default function LoginPage({ searchParams }) {
   const hasError = searchParams?.error === '1';
 
   return (
-    <div style={{ maxWidth: 380, margin: '60px auto' }}>
-      <h2 style={{ marginBottom: 6 }}>Iniciar sesión</h2>
-      <p style={{ color: 'var(--text-soft)', fontSize: '0.88rem', marginBottom: 20 }}>
+    <div className="login-wrap">
+      <h2 className="login-title">Iniciar sesión</h2>
+      <p className="login-sub">
         Solo necesario para agregar, editar o eliminar libros. Consultar el inventario no
         requiere iniciar sesión.
       </p>
 
       {hasError && (
-        <div className="notas" style={{ marginBottom: 16 }}>
+        <div className="notas notas-error login-alert" role="alert">
           Contraseña incorrecta. Intenta de nuevo.
         </div>
       )}
 
-      <form action={login} className="form-card" style={{ maxWidth: '100%' }}>
+      <form action={login} className="form-card login-form">
         <input type="hidden" name="next" value={next} />
-        <div className="form-grid" style={{ gridTemplateColumns: '1fr' }}>
+        <div className="form-grid form-grid-single">
           <div>
             <label htmlFor="password">Contraseña</label>
             <input id="password" name="password" type="password" required autoFocus />

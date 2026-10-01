@@ -12,5 +12,5 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/libros/:path*'],
+  matcher: ['/libros/:path*', '/revisar/:path*'],
 };
