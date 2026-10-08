@@ -94,7 +94,7 @@ export default async function InventarioPage({ searchParams }) {
         <div className="field">
           <label htmlFor="categoria">Categoría</label>
           <select id="categoria" name="categoria" defaultValue={params.categoria || ''}>
-            <option value="">Todas ({categorias.reduce((s, c) => s + c.total, 0)})</option>
+            <option value="">Todas</option>
             {categorias.map((c) => (
               <option key={c.nombre} value={c.nombre}>
                 {c.nombre} ({c.total})
