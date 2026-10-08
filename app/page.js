@@ -76,7 +76,7 @@ export default async function InventarioPage({ searchParams }) {
   return (
     <>
       <div className="dash-intro">
-        <span className="eyebrow">Catálogo</span>
+        <span className="eyebrow">Inventario</span>
         <h1>Inventario de la biblioteca</h1>
         <p>Busca, filtra y consulta el material bibliográfico disponible.</p>
       </div>
