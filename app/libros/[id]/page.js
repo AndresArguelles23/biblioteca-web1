@@ -27,17 +27,13 @@ export default async function LibroPage({ params, searchParams }) {
       <a href="/inventario" className="back-link">
         ← Volver al inventario
       </a>
-      <h2 className="detail-title">Editar libro</h2>
+      <h1 className="detail-title">Editar libro</h1>
       <p className="detail-meta">
         Clase <span className="mono">{libro.clase}</span>
       </p>
       <p className="detail-desc">
         {libro.texto_original || libro.titulo || '(sin descripción)'}
       </p>
-
-      {libro.notas_revision && (
-        <div className="notas">Pendiente de revisar: {libro.notas_revision}</div>
-      )}
 
       <BookForm action={boundUpdate} book={libro} submitLabel="Guardar cambios" error={saveError} />
 

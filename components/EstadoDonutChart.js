@@ -2,7 +2,7 @@
 
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-const COLORS = { Bueno: '#2F6B4A', Regular: '#A9752B', Malo: '#A33F2E' };
+const COLORS = { Bueno: '#16A34A', Regular: '#D97706', Malo: '#DC2626' };
 
 export default function EstadoDonutChart({ data }) {
   // data: [{ name: 'Bueno', value: N }, ...]

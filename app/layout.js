@@ -1,24 +1,22 @@
-import { Fraunces, Source_Sans_3, IBM_Plex_Mono } from 'next/font/google';
+import { Plus_Jakarta_Sans, Inter, JetBrains_Mono } from 'next/font/google';
 import { isAuthenticated } from '@/lib/auth';
 import { logout } from '@/app/login/actions';
-import { supabase } from '@/lib/supabase';
 import NavLinks from '@/components/NavLinks';
 import './globals.css';
 
-const display = Fraunces({
+const display = Plus_Jakarta_Sans({
   subsets: ['latin'],
-  weight: ['500', '600', '700'],
-  style: ['normal', 'italic'],
+  weight: ['500', '600', '700', '800'],
   variable: '--font-display',
 });
 
-const body = Source_Sans_3({
+const body = Inter({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
   variable: '--font-body',
 });
 
-const mono = IBM_Plex_Mono({
+const mono = JetBrains_Mono({
   subsets: ['latin'],
   weight: ['500', '600'],
   variable: '--font-mono',
@@ -34,23 +32,8 @@ export const metadata = {
   },
 };
 
-async function getPendientesCount() {
-  try {
-    const { count } = await supabase
-      .from('libros')
-      .select('id', { count: 'exact', head: true })
-      .eq('revisar', true);
-    return count || 0;
-  } catch {
-    return 0;
-  }
-}
-
 export default async function RootLayout({ children }) {
-  const [authed, pendientes] = await Promise.all([
-    isAuthenticated(),
-    getPendientesCount(),
-  ]);
+  const authed = await isAuthenticated();
 
   return (
     <html lang="es" className={`${display.variable} ${body.variable} ${mono.variable}`}>
@@ -59,10 +42,15 @@ export default async function RootLayout({ children }) {
           <div className="site-header-inner">
             <a href="/" className="brand-mark">
               <svg className="brand-icon" viewBox="0 0 32 32" aria-hidden="true">
-                <rect width="32" height="32" rx="6" fill="#18352B" />
-                <path d="M7 9.2C7 8.1 7.9 7.2 9 7.2H15.4V23.6L14.6 23.2C13 22.4 11.2 22 9.4 22H7V9.2Z" fill="#F4EEDF" />
-                <path d="M25 9.2C25 8.1 24.1 7.2 23 7.2H16.6V23.6L17.4 23.2C19 22.4 20.8 22 22.6 22H25V9.2Z" fill="#C79A4B" />
-                <rect x="15.2" y="7.2" width="1.6" height="16.4" fill="#18352B" />
+                <defs>
+                  <linearGradient id="brandGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stopColor="#4F46E5" />
+                    <stop offset="1" stopColor="#7C3AED" />
+                  </linearGradient>
+                </defs>
+                <rect width="32" height="32" rx="8" fill="url(#brandGrad)" />
+                <path d="M9 10.5C9 9.7 9.7 9 10.5 9H16V22.5L15.3 22.2C13.7 21.5 12 21.1 10.3 21.1H9V10.5Z" fill="#fff" fillOpacity="0.95" />
+                <path d="M23 10.5C23 9.7 22.3 9 21.5 9H16V22.5L16.7 22.2C18.3 21.5 20 21.1 21.7 21.1H23V10.5Z" fill="#fff" fillOpacity="0.65" />
               </svg>
               <span className="brand-text">
                 <span className="brand-name">Biblioteca Escolar</span>
@@ -70,7 +58,7 @@ export default async function RootLayout({ children }) {
               </span>
             </a>
             <nav className="main-nav" aria-label="Navegación principal">
-              <NavLinks pendientes={pendientes} />
+              <NavLinks />
             </nav>
             <div className="header-actions">
               <a href="/libros/nuevo" className="btn btn-primary nav-cta">

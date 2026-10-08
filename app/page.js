@@ -1,7 +1,6 @@
 import { supabase, fetchAllRows } from '@/lib/supabase';
 import EstadoDonutChart from '@/components/EstadoDonutChart';
 import CategoriaBarChart from '@/components/CategoriaBarChart';
-import RevisionRadialChart from '@/components/RevisionRadialChart';
 import DecadaBarChart from '@/components/DecadaBarChart';
 
 export const dynamic = 'force-dynamic';
@@ -10,12 +9,11 @@ const ANIO_MIN = 1900;
 const ANIO_MAX = new Date().getFullYear() + 1;
 
 async function getStats() {
-  const [{ count: total }, { count: revisar }, { count: malos }] = await Promise.all([
+  const [{ count: total }, { count: malos }] = await Promise.all([
     supabase.from('libros').select('id', { count: 'exact', head: true }),
-    supabase.from('libros').select('id', { count: 'exact', head: true }).eq('revisar', true),
     supabase.from('libros').select('id', { count: 'exact', head: true }).eq('estado', 'M'),
   ]);
-  return { total: total || 0, revisar: revisar || 0, malos: malos || 0 };
+  return { total: total || 0, malos: malos || 0 };
 }
 
 async function getAggregates() {
@@ -51,7 +49,13 @@ async function getAggregates() {
     .sort((a, b) => a[0] - b[0])
     .map(([decada, value]) => ({ name: `${decada}`, value }));
 
-  return { categorias: categoriasOrdenadas, porEstado, ejemplares, decadas: decadasOrdenadas };
+  return {
+    categorias: categoriasOrdenadas,
+    categoriasTotal: porCategoria.size,
+    porEstado,
+    ejemplares,
+    decadas: decadasOrdenadas,
+  };
 }
 
 export default async function DashboardPage() {
@@ -62,19 +66,17 @@ export default async function DashboardPage() {
     { name: 'Regular', value: agg.porEstado.R },
     { name: 'Malo', value: agg.porEstado.M },
   ];
-  const pctRevisado = stats.total > 0
-    ? Math.round(((stats.total - stats.revisar) / stats.total) * 100)
-    : 100;
 
   return (
     <>
       <div className="dash-intro">
-        <h2>Panorama del inventario</h2>
-        <p>Estado actual de la colección de la biblioteca escolar.</p>
+        <span className="eyebrow">Dashboard</span>
+        <h1>Panorama del inventario</h1>
+        <p>Estado actual de la colección de la biblioteca escolar, al día de hoy.</p>
       </div>
 
       <div className="stats-row">
-        <div className="stat-card">
+        <div className="stat-card stat-card-feature">
           <div className="stat-value">{stats.total.toLocaleString('es-CO')}</div>
           <div className="stat-label">Libros en el inventario</div>
         </div>
@@ -83,39 +85,30 @@ export default async function DashboardPage() {
           <div className="stat-label">Ejemplares totales</div>
         </div>
         <div className="stat-card">
+          <div className="stat-value">{agg.categoriasTotal.toLocaleString('es-CO')}</div>
+          <div className="stat-label">Categorías registradas</div>
+        </div>
+        <a href="/inventario?estado=M" className="stat-card stat-card-link stat-card-danger">
           <div className="stat-value">{stats.malos.toLocaleString('es-CO')}</div>
           <div className="stat-label">En mal estado</div>
-        </div>
-        <a
-          href="/revisar"
-          className="stat-card stat-card-link"
-          aria-label={`Inventario revisado ${pctRevisado}%. ${stats.revisar} pendientes de revisar.`}
-        >
-          <div className="stat-value">{pctRevisado}%</div>
-          <div className="stat-label">Inventario revisado</div>
         </a>
       </div>
 
-      <div className="dash-stack">
-        <div className="panel">
+      <div className="dash-grid">
+        <div className="panel panel-span-5">
           <h3>Distribución por estado</h3>
           <EstadoDonutChart data={estadoData} />
         </div>
 
-        <div className="panel">
-          <h3>Progreso de revisión del inventario</h3>
-          <RevisionRadialChart porcentaje={pctRevisado} pendientes={stats.revisar} />
-        </div>
-
-        <div className="panel panel-wide">
+        <div className="panel panel-span-7">
           <div className="panel-head">
             <h3>Libros por categoría (top 8)</h3>
-            <a href="/inventario">Ver inventario completo</a>
+            <a href="/inventario">Ver todas</a>
           </div>
           <CategoriaBarChart data={agg.categorias} />
         </div>
 
-        <div className="panel panel-wide">
+        <div className="panel panel-span-12">
           <h3>Libros por década de publicación</h3>
           <DecadaBarChart data={agg.decadas} />
         </div>
@@ -126,15 +119,10 @@ export default async function DashboardPage() {
           Ver inventario completo
         </a>
         <a href="/inventario?estado=M" className="btn btn-outline">
-          Ver libros en mal estado ({stats.malos})
+          Libros en mal estado ({stats.malos})
         </a>
-        {stats.revisar > 0 && (
-          <a href="/revisar" className="btn btn-outline">
-            Revisar pendientes ({stats.revisar})
-          </a>
-        )}
         <a href="/libros/nuevo" className="btn btn-outline">
-          + Agregar libro
+          Agregar libro
         </a>
       </div>
     </>

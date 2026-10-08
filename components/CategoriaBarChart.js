@@ -45,7 +45,7 @@ export default function CategoriaBarChart({ data }) {
           />
           <Bar dataKey="value" radius={[0, 6, 6, 0]} maxBarSize={18}>
             {data.map((entry, i) => (
-              <Cell key={entry.name} fill={i === 0 ? '#A9752B' : '#18352B'} fillOpacity={i === 0 ? 1 : 0.75} />
+              <Cell key={entry.name} fill={i === 0 ? '#4F46E5' : '#C7D2FE'} />
             ))}
             <LabelList
               dataKey="value"

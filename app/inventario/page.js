@@ -4,7 +4,7 @@ import PrintButton from '@/components/PrintButton';
 export const dynamic = 'force-dynamic';
 
 const PAGE_SIZE = 30;
-const LIST_COLUMNS = 'id,clase,titulo,autor,anio,categoria,estado,revisar,texto_original';
+const LIST_COLUMNS = 'id,clase,titulo,autor,anio,categoria,estado,texto_original';
 
 const SORT_OPTIONS = {
   clase: { column: 'clase', label: 'Clase' },
@@ -47,9 +47,6 @@ async function getLibros(params) {
   if (params.estado) {
     query = query.eq('estado', params.estado);
   }
-  if (params.revisar === '1') {
-    query = query.eq('revisar', true);
-  }
 
   const sortKey = SORT_OPTIONS[params.sort] ? params.sort : 'clase';
   const ascending = params.dir !== 'desc';
@@ -81,14 +78,15 @@ export default async function InventarioPage({ searchParams }) {
   ]);
 
   const totalPages = Math.max(Math.ceil(count / PAGE_SIZE), 1);
-  const hasFilters = params.q || params.categoria || params.estado || params.revisar;
+  const hasFilters = params.q || params.categoria || params.estado;
   const sortKey = SORT_OPTIONS[params.sort] ? params.sort : 'clase';
   const dir = params.dir === 'desc' ? 'desc' : 'asc';
 
   return (
     <>
       <div className="dash-intro">
-        <h2>Catálogo de la biblioteca</h2>
+        <span className="eyebrow">Inventario</span>
+        <h1>Catálogo de la biblioteca</h1>
         <p>Busca, filtra y consulta el inventario completo de material bibliográfico.</p>
       </div>
 
@@ -139,16 +137,6 @@ export default async function InventarioPage({ searchParams }) {
             <option value="desc">Z → A / mayor a menor</option>
           </select>
         </div>
-        <label className="check-field" htmlFor="revisar">
-          <input
-            type="checkbox"
-            id="revisar"
-            name="revisar"
-            value="1"
-            defaultChecked={params.revisar === '1'}
-          />
-          Solo pendientes de revisar
-        </label>
         <button type="submit" className="btn btn-primary">
           Buscar
         </button>
@@ -225,11 +213,6 @@ export default async function InventarioPage({ searchParams }) {
                               {ESTADO_LABEL[libro.estado] || libro.estado}
                             </span>
                           )}
-                          {libro.revisar && (
-                            <span className="alert-flag" role="img" aria-label="Pendiente de revisar" title="Pendiente de revisar">
-                              ⚠
-                            </span>
-                          )}
                         </div>
                       </a>
                     </td>
@@ -249,11 +232,6 @@ export default async function InventarioPage({ searchParams }) {
                     {libro.estado && (
                       <span className={`badge badge-${libro.estado}`}>
                         {ESTADO_LABEL[libro.estado] || libro.estado}
-                      </span>
-                    )}
-                    {libro.revisar && (
-                      <span className="alert-flag" role="img" aria-label="Pendiente de revisar" title="Pendiente de revisar">
-                        ⚠
                       </span>
                     )}
                   </div>

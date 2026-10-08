@@ -6,7 +6,7 @@ export default function LoginPage({ searchParams }) {
 
   return (
     <div className="login-wrap">
-      <h2 className="login-title">Iniciar sesión</h2>
+      <h1 className="login-title">Iniciar sesión</h1>
       <p className="login-sub">
         Solo necesario para agregar, editar o eliminar libros. Consultar el inventario no
         requiere iniciar sesión.

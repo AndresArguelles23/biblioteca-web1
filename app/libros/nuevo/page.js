@@ -10,7 +10,7 @@ export default function NuevoLibroPage({ searchParams }) {
       <a href="/inventario" className="back-link">
         ← Volver al inventario
       </a>
-      <h2 className="detail-title" style={{ marginBottom: 16 }}>Agregar libro</h2>
+      <h1 className="detail-title" style={{ marginBottom: 16 }}>Agregar libro</h1>
       <p className="detail-desc">Completa los datos del ejemplar para sumarlo al catálogo.</p>
       <BookForm action={addBook} submitLabel="Guardar libro" error={error} />
     </>

@@ -79,12 +79,6 @@ export default function BookForm({ action, book, submitLabel, error }) {
           </div>
         </fieldset>
         <div className="full">
-          <label className="checkbox-field">
-            <input type="checkbox" name="revisar" defaultChecked={!!b.revisar} />
-            <span aria-hidden="true">⚠</span> Marcar para revisar (alerta visible en el inventario)
-          </label>
-        </div>
-        <div className="full">
           <label htmlFor="texto_original">Texto original / descripción completa</label>
           <textarea id="texto_original" name="texto_original" defaultValue={b.texto_original || ''} />
         </div>

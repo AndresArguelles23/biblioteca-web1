@@ -34,7 +34,7 @@ export default function DecadaBarChart({ data }) {
               fontSize: '0.82rem',
             }}
           />
-          <Bar dataKey="value" fill="#18352B" radius={[2, 2, 0, 0]} maxBarSize={40} />
+          <Bar dataKey="value" fill="#4F46E5" radius={[6, 6, 0, 0]} maxBarSize={40} />
         </BarChart>
       </ResponsiveContainer>
     </div>

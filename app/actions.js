@@ -17,7 +17,6 @@ function toTextOrNull(value) {
 }
 
 function extractPayload(formData) {
-  const revisar = formData.get('revisar') === 'on';
   return {
     categoria: toTextOrNull(formData.get('categoria')),
     subcategoria: toTextOrNull(formData.get('subcategoria')),
@@ -34,8 +33,6 @@ function extractPayload(formData) {
     cantidad: toIntOrNull(formData.get('cantidad')) ?? 1,
     estado: toTextOrNull(formData.get('estado')),
     ubicacion: toTextOrNull(formData.get('ubicacion')),
-    revisar,
-    notas_revision: revisar ? toTextOrNull(formData.get('notas_revision')) : null,
     texto_original: toTextOrNull(formData.get('texto_original')),
   };
 }
@@ -70,24 +67,4 @@ export async function deleteBook(id) {
   revalidatePath('/');
   revalidatePath('/inventario');
   redirect('/inventario');
-}
-
-export async function reviewSave(id, formData) {
-  const payload = extractPayload(formData);
-  const marcarRevisado = formData.get('marcar_revisado') === 'on';
-
-  // La cola de revisión usa su propio checkbox ("marcar_revisado") en vez del
-  // checkbox "revisar" del formulario completo, así que decidimos el estado
-  // de revisión explícitamente aquí.
-  payload.revisar = !marcarRevisado;
-  payload.notas_revision = marcarRevisado ? null : toTextOrNull(formData.get('notas_revision'));
-
-  const { error } = await supabase.from('libros').update(payload).eq('id', id);
-  if (error) {
-    redirect(`/revisar?after=${id}&error=${encodeURIComponent('No se pudo guardar: ' + error.message)}`);
-  }
-  revalidatePath('/');
-  revalidatePath('/inventario');
-  revalidatePath('/revisar');
-  redirect(`/revisar?after=${id}`);
 }
