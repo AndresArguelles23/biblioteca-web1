@@ -196,7 +196,7 @@ export default async function RevisarPage({ searchParams }) {
         </div>
         <div className="form-actions">
           <button type="submit" className="btn btn-primary">
-            Guardar y siguiente →
+            Guardar y continuar
           </button>
           <a href={`/revisar?after=${libro.id}`}>Saltar por ahora</a>
         </div>

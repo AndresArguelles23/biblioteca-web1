@@ -87,6 +87,11 @@ export default async function InventarioPage({ searchParams }) {
 
   return (
     <>
+      <div className="dash-intro">
+        <h2>Catálogo de la biblioteca</h2>
+        <p>Busca, filtra y consulta el inventario completo de material bibliográfico.</p>
+      </div>
+
       <form className="filters" method="GET">
         <div className="field" style={{ flex: '1 1 220px' }}>
           <label htmlFor="q">Buscar</label>

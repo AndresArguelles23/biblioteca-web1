@@ -3,7 +3,7 @@
 import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer } from 'recharts';
 
 export default function RevisionRadialChart({ porcentaje, pendientes }) {
-  const data = [{ name: 'Revisado', value: porcentaje, fill: '#2953a6' }];
+  const data = [{ name: 'Revisado', value: porcentaje, fill: '#A9752B' }];
 
   return (
     <div style={{ width: '100%', minWidth: 0, height: 220, position: 'relative' }}>
@@ -38,7 +38,7 @@ export default function RevisionRadialChart({ porcentaje, pendientes }) {
           pointerEvents: 'none',
         }}
       >
-        <div style={{ fontSize: '1.9rem', fontWeight: 800, color: 'var(--text)' }}>
+        <div style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 600, color: 'var(--text)' }}>
           {porcentaje}%
         </div>
         <div style={{ fontSize: '0.78rem', color: 'var(--text-soft)' }}>

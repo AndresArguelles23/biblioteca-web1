@@ -68,6 +68,11 @@ export default async function DashboardPage() {
 
   return (
     <>
+      <div className="dash-intro">
+        <h2>Panorama del inventario</h2>
+        <p>Estado actual de la colección de la biblioteca escolar.</p>
+      </div>
+
       <div className="stats-row">
         <div className="stat-card">
           <div className="stat-value">{stats.total.toLocaleString('es-CO')}</div>
@@ -102,15 +107,15 @@ export default async function DashboardPage() {
           <RevisionRadialChart porcentaje={pctRevisado} pendientes={stats.revisar} />
         </div>
 
-        <div className="panel">
+        <div className="panel panel-wide">
           <div className="panel-head">
             <h3>Libros por categoría (top 8)</h3>
-            <a href="/inventario">Ver inventario →</a>
+            <a href="/inventario">Ver inventario completo</a>
           </div>
           <CategoriaBarChart data={agg.categorias} />
         </div>
 
-        <div className="panel">
+        <div className="panel panel-wide">
           <h3>Libros por década de publicación</h3>
           <DecadaBarChart data={agg.decadas} />
         </div>

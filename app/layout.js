@@ -1,19 +1,20 @@
-import { Manrope, Inter, IBM_Plex_Mono } from 'next/font/google';
+import { Fraunces, Source_Sans_3, IBM_Plex_Mono } from 'next/font/google';
 import { isAuthenticated } from '@/lib/auth';
 import { logout } from '@/app/login/actions';
 import { supabase } from '@/lib/supabase';
 import NavLinks from '@/components/NavLinks';
 import './globals.css';
 
-const display = Manrope({
+const display = Fraunces({
   subsets: ['latin'],
-  weight: ['700', '800'],
+  weight: ['500', '600', '700'],
+  style: ['normal', 'italic'],
   variable: '--font-display',
 });
 
-const body = Inter({
+const body = Source_Sans_3({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-body',
 });
 
@@ -25,7 +26,7 @@ const mono = IBM_Plex_Mono({
 
 export const metadata = {
   title: 'Biblioteca Escolar — Normal Superior Santa Clara Almaguer',
-  description: 'Inventario del material bibliográfico de la biblioteca escolar.',
+  description: 'Catálogo e inventario del material bibliográfico de la biblioteca escolar.',
   openGraph: {
     title: 'Biblioteca Escolar — Normal Superior Santa Clara Almaguer',
     description: 'Consulta el inventario de material bibliográfico de la biblioteca escolar.',
@@ -55,38 +56,46 @@ export default async function RootLayout({ children }) {
     <html lang="es" className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <body>
         <header className="site-header">
-          <a href="/" style={{ textDecoration: 'none' }}>
-            <div className="brand-mark">
-              <div className="brand-icon">BE</div>
-              <div>
-                <h1>Biblioteca Escolar</h1>
-                <div className="subtitle">Normal Superior Santa Clara Almaguer</div>
-              </div>
-            </div>
-          </a>
-          <nav className="main-nav" aria-label="Navegación principal">
-            <NavLinks pendientes={pendientes} />
-            <a href="/libros/nuevo" className="btn btn-primary nav-cta">
-              + Agregar libro
+          <div className="site-header-inner">
+            <a href="/" className="brand-mark">
+              <svg className="brand-icon" viewBox="0 0 32 32" aria-hidden="true">
+                <rect width="32" height="32" rx="6" fill="#18352B" />
+                <path d="M7 9.2C7 8.1 7.9 7.2 9 7.2H15.4V23.6L14.6 23.2C13 22.4 11.2 22 9.4 22H7V9.2Z" fill="#F4EEDF" />
+                <path d="M25 9.2C25 8.1 24.1 7.2 23 7.2H16.6V23.6L17.4 23.2C19 22.4 20.8 22 22.6 22H25V9.2Z" fill="#C79A4B" />
+                <rect x="15.2" y="7.2" width="1.6" height="16.4" fill="#18352B" />
+              </svg>
+              <span className="brand-text">
+                <span className="brand-name">Biblioteca Escolar</span>
+                <span className="brand-sub">Normal Superior Santa Clara Almaguer</span>
+              </span>
             </a>
-            {authed ? (
-              <form action={logout} className="nav-session">
-                <button type="submit" className="btn btn-outline">
-                  Cerrar sesión
-                </button>
-              </form>
-            ) : (
-              <a href="/login" className="btn btn-outline nav-session">
-                Iniciar sesión
+            <nav className="main-nav" aria-label="Navegación principal">
+              <NavLinks pendientes={pendientes} />
+            </nav>
+            <div className="header-actions">
+              <a href="/libros/nuevo" className="btn btn-primary nav-cta">
+                Agregar libro
               </a>
-            )}
-          </nav>
+              {authed ? (
+                <form action={logout} className="nav-session">
+                  <button type="submit" className="btn btn-ghost">
+                    Cerrar sesión
+                  </button>
+                </form>
+              ) : (
+                <a href="/login" className="btn btn-ghost nav-session">
+                  Iniciar sesión
+                </a>
+              )}
+            </div>
+          </div>
         </header>
         <main>{children}</main>
         <footer className="site-footer">
-          <span>Biblioteca Escolar — Institución Educativa Normal Superior Santa Clara Almaguer</span>
-          <span className="footer-sep">·</span>
-          <span>Sistema de inventario bibliográfico</span>
+          <div className="site-footer-inner">
+            <p>Institución Educativa Normal Superior Santa Clara Almaguer</p>
+            <p className="footer-faint">Sistema de catálogo e inventario bibliográfico</p>
+          </div>
         </footer>
       </body>
     </html>
