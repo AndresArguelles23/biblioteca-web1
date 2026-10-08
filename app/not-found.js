@@ -8,9 +8,6 @@ export default function NotFound() {
       </p>
       <div className="not-found-actions">
         <a href="/" className="btn btn-primary">
-          Volver al Dashboard
-        </a>
-        <a href="/inventario" className="btn btn-outline">
           Ver inventario
         </a>
       </div>

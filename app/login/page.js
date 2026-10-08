@@ -30,7 +30,7 @@ export default function LoginPage({ searchParams }) {
           <button type="submit" className="btn btn-primary">
             Entrar
           </button>
-          <a href="/">Volver al Dashboard</a>
+          <a href="/">Volver al inventario</a>
         </div>
       </form>
     </div>

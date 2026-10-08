@@ -1,129 +1,227 @@
 import { supabase, fetchAllRows } from '@/lib/supabase';
-import EstadoDonutChart from '@/components/EstadoDonutChart';
-import CategoriaBarChart from '@/components/CategoriaBarChart';
-import DecadaBarChart from '@/components/DecadaBarChart';
+import { isAuthenticated } from '@/lib/auth';
+import PrintButton from '@/components/PrintButton';
 
 export const dynamic = 'force-dynamic';
 
-const ANIO_MIN = 1900;
-const ANIO_MAX = new Date().getFullYear() + 1;
+const PAGE_SIZE = 30;
+const LIST_COLUMNS = 'id,clase,titulo,autor,categoria,estado,texto_original';
+const ESTADO_LABEL = { B: 'Bueno', R: 'Regular', M: 'Malo' };
 
-async function getStats() {
-  const [{ count: total }, { count: malos }] = await Promise.all([
-    supabase.from('libros').select('id', { count: 'exact', head: true }),
-    supabase.from('libros').select('id', { count: 'exact', head: true }).eq('estado', 'M'),
-  ]);
-  return { total: total || 0, malos: malos || 0 };
-}
-
-async function getAggregates() {
-  const rows = await fetchAllRows('categoria,estado,cantidad,anio');
-
-  const porCategoria = new Map();
-  const porEstado = { B: 0, R: 0, M: 0 };
-  const porDecada = new Map();
-  let ejemplares = 0;
-
+async function getCategoriasConConteo() {
+  // fetchAllRows pagina automáticamente: con .select() normal, Supabase
+  // corta en 1000 filas y varias categorías del final de la lista no
+  // aparecían nunca en el filtro.
+  const rows = await fetchAllRows('categoria');
+  const counts = new Map();
   rows.forEach((r) => {
-    if (r.categoria) {
-      porCategoria.set(r.categoria, (porCategoria.get(r.categoria) || 0) + 1);
-    }
-    if (r.estado && porEstado[r.estado] !== undefined) {
-      porEstado[r.estado] += 1;
-    }
-    ejemplares += Number(r.cantidad) || 0;
-
-    const anio = Number(r.anio);
-    if (anio && anio >= ANIO_MIN && anio <= ANIO_MAX) {
-      const decada = Math.floor(anio / 10) * 10;
-      porDecada.set(decada, (porDecada.get(decada) || 0) + 1);
-    }
+    if (!r.categoria) return;
+    counts.set(r.categoria, (counts.get(r.categoria) || 0) + 1);
   });
-
-  const categoriasOrdenadas = Array.from(porCategoria.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
-    .map(([name, value]) => ({ name, value }));
-
-  const decadasOrdenadas = Array.from(porDecada.entries())
-    .sort((a, b) => a[0] - b[0])
-    .map(([decada, value]) => ({ name: `${decada}`, value }));
-
-  return {
-    categorias: categoriasOrdenadas,
-    categoriasTotal: porCategoria.size,
-    porEstado,
-    ejemplares,
-    decadas: decadasOrdenadas,
-  };
+  return Array.from(counts.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([nombre, total]) => ({ nombre, total }));
 }
 
-export default async function DashboardPage() {
-  const [stats, agg] = await Promise.all([getStats(), getAggregates()]);
+async function getLibros(params) {
+  const page = Math.max(parseInt(params.page || '1', 10), 1);
+  const from = (page - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
 
-  const estadoData = [
-    { name: 'Bueno', value: agg.porEstado.B },
-    { name: 'Regular', value: agg.porEstado.R },
-    { name: 'Malo', value: agg.porEstado.M },
-  ];
+  let query = supabase.from('libros').select(LIST_COLUMNS, { count: 'exact' });
+
+  if (params.q) {
+    const q = params.q.trim();
+    query = query.or(
+      `titulo.ilike.%${q}%,autor.ilike.%${q}%,clase.ilike.%${q}%,isbn.ilike.%${q}%,texto_original.ilike.%${q}%`
+    );
+  }
+  if (params.categoria) {
+    query = query.eq('categoria', params.categoria);
+  }
+  // El filtro de estado ya no tiene un control propio en la barra de
+  // búsqueda (ver mejoras de UX), pero se mantiene soportado por URL para
+  // los accesos directos del dashboard, p. ej. "Libros en mal estado".
+  if (params.estado) {
+    query = query.eq('estado', params.estado);
+  }
+
+  query = query.order('clase', { ascending: true, nullsFirst: false }).range(from, to);
+
+  const { data, count, error } = await query;
+  return { data: data || [], count: count || 0, page, error };
+}
+
+function qs(params, overrides) {
+  const merged = { ...params, ...overrides };
+  const usp = new URLSearchParams();
+  Object.entries(merged).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== '') usp.set(k, v);
+  });
+  const s = usp.toString();
+  return s ? `/?${s}` : '/';
+}
+
+export default async function InventarioPage({ searchParams }) {
+  const params = searchParams || {};
+  const authed = isAuthenticated();
+  const [categorias, { data: libros, count, page, error }] = await Promise.all([
+    getCategoriasConConteo(),
+    getLibros(params),
+  ]);
+
+  const totalPages = Math.max(Math.ceil(count / PAGE_SIZE), 1);
+  const hasFilters = params.q || params.categoria || params.estado;
 
   return (
     <>
       <div className="dash-intro">
-        <span className="eyebrow">Dashboard</span>
-        <h1>Panorama del inventario</h1>
-        <p>Estado actual de la colección de la biblioteca escolar, al día de hoy.</p>
+        <span className="eyebrow">Catálogo</span>
+        <h1>Inventario de la biblioteca</h1>
+        <p>Busca, filtra y consulta el material bibliográfico disponible.</p>
       </div>
 
-      <div className="stats-row">
-        <div className="stat-card stat-card-feature">
-          <div className="stat-value">{stats.total.toLocaleString('es-CO')}</div>
-          <div className="stat-label">Libros en el inventario</div>
+      <form className="filters" method="GET">
+        <div className="field" style={{ flex: '1 1 260px' }}>
+          <label htmlFor="q">Buscar</label>
+          <input
+            id="q"
+            name="q"
+            placeholder="Título, autor, clase o ISBN..."
+            defaultValue={params.q || ''}
+          />
         </div>
-        <div className="stat-card">
-          <div className="stat-value">{agg.ejemplares.toLocaleString('es-CO')}</div>
-          <div className="stat-label">Ejemplares totales</div>
+        <div className="field">
+          <label htmlFor="categoria">Categoría</label>
+          <select id="categoria" name="categoria" defaultValue={params.categoria || ''}>
+            <option value="">Todas ({categorias.reduce((s, c) => s + c.total, 0)})</option>
+            {categorias.map((c) => (
+              <option key={c.nombre} value={c.nombre}>
+                {c.nombre} ({c.total})
+              </option>
+            ))}
+          </select>
         </div>
-        <div className="stat-card">
-          <div className="stat-value">{agg.categoriasTotal.toLocaleString('es-CO')}</div>
-          <div className="stat-label">Categorías registradas</div>
+        <button type="submit" className="btn btn-primary">
+          Buscar
+        </button>
+      </form>
+
+      <div className="summary-bar">
+        <span>
+          {count} {count === 1 ? 'libro encontrado' : 'libros encontrados'}
+          {params.estado && ` · estado: ${ESTADO_LABEL[params.estado] || params.estado}`}
+        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          {hasFilters && <a href="/">Limpiar filtros</a>}
+          <PrintButton />
         </div>
-        <a href="/inventario?estado=M" className="stat-card stat-card-link stat-card-danger">
-          <div className="stat-value">{stats.malos.toLocaleString('es-CO')}</div>
-          <div className="stat-label">En mal estado</div>
-        </a>
       </div>
 
-      <div className="dash-grid">
-        <div className="panel panel-span-5">
-          <h3>Distribución por estado</h3>
-          <EstadoDonutChart data={estadoData} />
-        </div>
+      <div className="print-only print-header">
+        <h2>Inventario — Biblioteca Escolar</h2>
+        <p>Normal Superior Santa Clara Almaguer · Impreso el {new Date().toLocaleDateString('es-CO')}</p>
+      </div>
 
-        <div className="panel panel-span-7">
-          <div className="panel-head">
-            <h3>Libros por categoría (top 8)</h3>
-            <a href="/inventario">Ver todas</a>
+      {error && <p className="notas">Error consultando la base de datos: {error.message}</p>}
+
+      {libros.length === 0 && !error ? (
+        <div className="empty-state">
+          <p>No hay libros que coincidan con esta búsqueda.</p>
+          {authed && (
+            <a href="/libros/nuevo" className="btn btn-primary" style={{ marginTop: 10 }}>
+              Agregar el primer libro
+            </a>
+          )}
+        </div>
+      ) : (
+        <>
+          {/* Vista de escritorio */}
+          <div className="book-table-wrap">
+            <table className="book-table">
+              <thead>
+                <tr>
+                  <th style={{ width: 110 }}>Clase</th>
+                  <th>Descripción</th>
+                  <th style={{ width: 200 }}>Categoría</th>
+                  <th style={{ width: 140 }}>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {libros.map((libro) => (
+                  <tr key={libro.id} className="row-link">
+                    <td>
+                      <a className="row-anchor" href={`/libros/${libro.id}`}>
+                        <span className="clase-badge mono">{libro.clase || '—'}</span>
+                      </a>
+                    </td>
+                    <td>
+                      <a className="row-anchor" href={`/libros/${libro.id}`}>
+                        <div className="td-titulo clamp-2">
+                          {libro.texto_original || libro.titulo || '(sin descripción)'}
+                        </div>
+                      </a>
+                    </td>
+                    <td>
+                      <a className="row-anchor" href={`/libros/${libro.id}`}>
+                        {libro.categoria || '—'}
+                      </a>
+                    </td>
+                    <td>
+                      <a className="row-anchor" href={`/libros/${libro.id}`}>
+                        <div className="badges">
+                          {libro.estado && (
+                            <span className={`badge badge-${libro.estado}`}>
+                              {ESTADO_LABEL[libro.estado] || libro.estado}
+                            </span>
+                          )}
+                        </div>
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-          <CategoriaBarChart data={agg.categorias} />
-        </div>
 
-        <div className="panel panel-span-12">
-          <h3>Libros por década de publicación</h3>
-          <DecadaBarChart data={agg.decadas} />
-        </div>
-      </div>
+          {/* Vista de celular */}
+          <div className="mobile-book-list">
+            {libros.map((libro) => (
+              <a key={libro.id} className="mobile-card" href={`/libros/${libro.id}`}>
+                <div className="top-row">
+                  <span className="clase-badge mono">{libro.clase || '—'}</span>
+                  <div className="badges">
+                    {libro.estado && (
+                      <span className={`badge badge-${libro.estado}`}>
+                        {ESTADO_LABEL[libro.estado] || libro.estado}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="card-titulo clamp-2">
+                  {libro.texto_original || libro.titulo || '(sin descripción)'}
+                </div>
+                <div className="card-meta">{libro.categoria}</div>
+              </a>
+            ))}
+          </div>
+        </>
+      )}
 
-      <div className="dash-actions">
-        <a href="/inventario" className="btn btn-primary">
-          Ver inventario completo
-        </a>
-        <a href="/inventario?estado=M" className="btn btn-outline">
-          Libros en mal estado ({stats.malos})
-        </a>
-        <a href="/libros/nuevo" className="btn btn-outline">
-          Agregar libro
-        </a>
+      <div className="pagination">
+        {page <= 1 ? (
+          <span className="disabled" aria-disabled="true">← Anterior</span>
+        ) : (
+          <a href={qs(params, { page: page - 1 })}>← Anterior</a>
+        )}
+        <span>
+          Página {page} de {totalPages}
+        </span>
+        {page >= totalPages ? (
+          <span className="disabled" aria-disabled="true">Siguiente →</span>
+        ) : (
+          <a href={qs(params, { page: page + 1 })}>Siguiente →</a>
+        )}
       </div>
     </>
   );

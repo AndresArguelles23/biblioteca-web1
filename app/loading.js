@@ -3,30 +3,17 @@ export default function Loading() {
     <>
       <div className="dash-intro">
         <div className="skeleton-line" style={{ width: 90, height: 12, marginBottom: 10 }} />
-        <div className="skeleton-line" style={{ width: 280, height: 30, marginBottom: 10 }} />
-        <div className="skeleton-line" style={{ width: 360, height: 14 }} />
+        <div className="skeleton-line" style={{ width: 260, height: 30, marginBottom: 10 }} />
+        <div className="skeleton-line" style={{ width: 340, height: 14 }} />
       </div>
-      <div className="stats-row">
-        {[1, 2, 3, 4].map((i) => (
-          <div className="stat-card skeleton-card" key={i}>
-            <div className="skeleton-line" style={{ width: '50%', height: 28, marginBottom: 8 }} />
-            <div className="skeleton-line" style={{ width: '75%', height: 12 }} />
-          </div>
+      <div className="filters">
+        <div className="skeleton-line" style={{ width: '100%', height: 38, flex: '1 1 260px' }} />
+        <div className="skeleton-line" style={{ width: 160, height: 38 }} />
+      </div>
+      <div className="book-table-wrap" style={{ padding: 16 }}>
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="skeleton-line" style={{ width: '100%', height: 44, marginBottom: 8 }} />
         ))}
-      </div>
-      <div className="dash-grid">
-        <div className="panel panel-span-5">
-          <div className="skeleton-line" style={{ width: 150, height: 16, marginBottom: 16 }} />
-          <div className="skeleton-block" style={{ height: 200 }} />
-        </div>
-        <div className="panel panel-span-7">
-          <div className="skeleton-line" style={{ width: 180, height: 16, marginBottom: 16 }} />
-          <div className="skeleton-block" style={{ height: 200 }} />
-        </div>
-        <div className="panel panel-span-12">
-          <div className="skeleton-line" style={{ width: 200, height: 16, marginBottom: 16 }} />
-          <div className="skeleton-block" style={{ height: 180 }} />
-        </div>
       </div>
     </>
   );

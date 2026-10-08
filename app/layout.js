@@ -61,9 +61,11 @@ export default async function RootLayout({ children }) {
               <NavLinks />
             </nav>
             <div className="header-actions">
-              <a href="/libros/nuevo" className="btn btn-primary nav-cta">
-                Agregar libro
-              </a>
+              {authed && (
+                <a href="/libros/nuevo" className="btn btn-primary nav-cta">
+                  Agregar libro
+                </a>
+              )}
               {authed ? (
                 <form action={logout} className="nav-session">
                   <button type="submit" className="btn btn-ghost">

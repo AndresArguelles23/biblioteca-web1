@@ -1,6 +1,7 @@
 'use server';
 
 import { supabase } from '@/lib/supabase';
+import { isAuthenticated } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -37,7 +38,17 @@ function extractPayload(formData) {
   };
 }
 
+// Toda acción de escritura se valida aquí, en el servidor, sin depender de
+// que la interfaz oculte el botón correspondiente. Un usuario sin sesión
+// que intente invocar la acción directamente recibe el mismo rechazo.
+function requireAuth() {
+  if (!isAuthenticated()) {
+    redirect('/login');
+  }
+}
+
 export async function addBook(formData) {
+  requireAuth();
   const payload = extractPayload(formData);
   const { error } = await supabase.from('libros').insert(payload);
   if (error) {
@@ -49,17 +60,20 @@ export async function addBook(formData) {
 }
 
 export async function updateBook(id, formData) {
+  requireAuth();
   const payload = extractPayload(formData);
   const { error } = await supabase.from('libros').update(payload).eq('id', id);
   if (error) {
-    redirect(`/libros/${id}?error=${encodeURIComponent('No se pudo actualizar el libro: ' + error.message)}`);
+    redirect(`/libros/${id}/editar?error=${encodeURIComponent('No se pudo actualizar el libro: ' + error.message)}`);
   }
   revalidatePath('/');
   revalidatePath('/inventario');
-  redirect('/inventario');
+  revalidatePath(`/libros/${id}`);
+  redirect(`/libros/${id}`);
 }
 
 export async function deleteBook(id) {
+  requireAuth();
   const { error } = await supabase.from('libros').delete().eq('id', id);
   if (error) {
     redirect(`/libros/${id}?error=${encodeURIComponent('No se pudo eliminar el libro: ' + error.message)}`);

@@ -7,7 +7,7 @@ export default function NuevoLibroPage({ searchParams }) {
   const error = searchParams?.error;
   return (
     <>
-      <a href="/inventario" className="back-link">
+      <a href="/" className="back-link">
         ← Volver al inventario
       </a>
       <h1 className="detail-title" style={{ marginBottom: 16 }}>Agregar libro</h1>

@@ -87,7 +87,7 @@ export default function BookForm({ action, book, submitLabel, error }) {
         <button type="submit" className="btn btn-primary">
           {submitLabel || 'Guardar'}
         </button>
-        <a href="/inventario" style={{ fontSize: '0.88rem' }}>
+        <a href="/" style={{ fontSize: '0.88rem' }}>
           Cancelar
         </a>
       </div>

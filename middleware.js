@@ -11,6 +11,9 @@ export function middleware(request) {
   return NextResponse.redirect(loginUrl);
 }
 
+// Solo las rutas de gestión (crear, editar) requieren sesión. Consultar el
+// catálogo, el detalle de un libro y el dashboard de estadísticas quedan
+// siempre públicos, en modo solo lectura.
 export const config = {
-  matcher: ['/libros/:path*'],
+  matcher: ['/libros/nuevo', '/libros/:id/editar'],
 };

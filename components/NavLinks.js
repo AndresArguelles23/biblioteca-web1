@@ -2,17 +2,17 @@
 
 import { usePathname } from 'next/navigation';
 
-const LINKS = [
-  { href: '/', label: 'Dashboard', exact: true },
-  { href: '/inventario', label: 'Inventario' },
-];
-
 export default function NavLinks() {
   const pathname = usePathname();
 
+  const links = [
+    { href: '/', label: 'Catálogo', exact: true },
+    { href: '/dashboard', label: 'Dashboard', exact: true },
+  ];
+
   return (
     <>
-      {LINKS.map((link) => {
+      {links.map((link) => {
         const isActive = link.exact ? pathname === link.href : pathname.startsWith(link.href);
         return (
           <a
